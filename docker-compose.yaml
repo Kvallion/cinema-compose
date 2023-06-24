@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  # Mongodb service
+  mongodb: 
+    container_name: mongodb_container
+    image: mongo:latest
+    restart: always
+    ports:
+      - 2717:27017
+    volumes:
+      - mongodb:/data/db
+  
+  # Nestjs service
+  backend:
+    image: kvallion/online-cinema-backend
+    container_name: nest_container
+    build:
+      dockerfile: Dockerfile
+      context: ./backend-advanced-main
+    ports:
+      - 4200:4200
+    volumes:
+      - uploads:/uploads
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongodb:27017/online-cinema
+    env_file:
+      - ./backend-advanced-main/.env
+    depends_on:
+      - mongodb
+
+  frontend:
+    image: kvallion/online-cinema-frontend
+    container_name: next_container
+    build:
+      dockerfile: Dockerfile
+      context: ./online-cinema
+    ports:
+      - 80:3000
+    env_file:
+      - ./online-cinema/.env
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    
+
+  
+  
+volumes:
+  mongodb: {}
+  uploads:
